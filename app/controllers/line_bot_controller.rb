@@ -1,4 +1,5 @@
 class LineBotController < ApplicationController
+  require "line/bot"
   # CSRF対策を外すために以下の記述を追記するのを忘れずに
   protect_from_forgery with: :null_session
 
@@ -17,8 +18,22 @@ class LineBotController < ApplicationController
 
     events.each do |event|
       # LINE からテキストが送信された場合
-      if (event.type === Line::Bot::Event::MessageType::Text)
-        # LINE からテキストが送信されたときの処理を記述する
+      if (event.type ===Line::Bot::Event::MessageType::Text)
+         # LINE からテキストが送信されたときの処理を記述する
+         message = event["message"]["text"]
+
+        #  binding.pry
+
+         # 送信されたメッセージをデータベースに保存するコードを書こう
+         Task.create(body: message)
+
+         reply_message = {
+           type: "text",
+           text: "タスク: 「#{message}」 を登録しました！" # LINE に返すメッセージを考えてみよう
+         }
+         client.reply_message(event["replyToken"], reply_message)
+
+
       end
     end
 
